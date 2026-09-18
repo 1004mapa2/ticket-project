@@ -9,7 +9,10 @@
 
 ## 문서
 - 분석
+  - [요구사항 정의서](docs/analysis/r1.md)
 - 설계
   - [화면 설계서](docs/design/d2.md)
+  - [API/인터페이스 설계서](docs/design/d4.md)
+  - [아키텍쳐 설계서](docs/design/d5.md)
   - [데이터베이스 설계서](docs/design/d9.md)
 - 구현

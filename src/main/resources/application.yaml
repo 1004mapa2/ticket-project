@@ -1,5 +1,13 @@
 spring:
   application:
     name: ticketing
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+    open-in-view: false
 server:
   port: 8085

@@ -1,5 +1,6 @@
 package com.dalrae.ticketing.global.security;
 
+import com.dalrae.ticketing.global.exception.ErrorCode;
 import com.dalrae.ticketing.global.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +26,7 @@ public class JsonAccessDeniedHandler implements AccessDeniedHandler {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8);
-        jsonMapper.writeValue(response.getWriter(), ErrorResponse.of(HttpStatus.FORBIDDEN, "권한이 없습니다."));
+        jsonMapper.writeValue(response.getWriter(), ErrorResponse.of(ErrorCode.FORBIDDEN));
 
     }
 }

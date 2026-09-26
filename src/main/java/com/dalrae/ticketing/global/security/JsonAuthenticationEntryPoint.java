@@ -1,5 +1,6 @@
 package com.dalrae.ticketing.global.security;
 
+import com.dalrae.ticketing.global.exception.ErrorCode;
 import com.dalrae.ticketing.global.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +25,6 @@ public class JsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8);
-        jsonMapper.writeValue(response.getWriter(), ErrorResponse.of(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."));
+        jsonMapper.writeValue(response.getWriter(), ErrorResponse.of(ErrorCode.UNAUTHORIZED));
     }
 }

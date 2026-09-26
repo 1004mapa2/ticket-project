@@ -1,5 +1,7 @@
 package com.dalrae.ticketing.user.service;
 
+import com.dalrae.ticketing.global.exception.BusinessException;
+import com.dalrae.ticketing.global.exception.ErrorCode;
 import com.dalrae.ticketing.user.domain.User;
 import com.dalrae.ticketing.user.dto.SignUpRequest;
 import com.dalrae.ticketing.user.repository.UserRepository;
@@ -20,12 +22,10 @@ public class UserService {
     @Transactional
     public void saveUser(SignUpRequest request) {
         if(userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
         String encodedPassword = passwordEncoder.encode(request.password());
         User user = userRepository.save(request.toEntity(encodedPassword));
         log.info("user {}", user);
-
-        userRepository.save(user);
     }
 }

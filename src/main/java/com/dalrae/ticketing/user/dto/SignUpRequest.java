@@ -9,7 +9,9 @@ public record SignUpRequest(
         String email,
         @NotBlank
         String password,
+        @NotBlank
         String name,
+        @NotBlank
         String phone
 ) {
     public User toEntity(String encodedPassword) {

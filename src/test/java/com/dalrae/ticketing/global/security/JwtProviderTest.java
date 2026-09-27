@@ -2,6 +2,7 @@ package com.dalrae.ticketing.global.security;
 
 import com.dalrae.ticketing.global.Role;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.security.WeakKeyException;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +19,7 @@ class JwtProviderTest {
 
     private static final String SECRET_KEY = "wkwP5PsUMjeA8PqoMe6PzotiSAgWanskHWNjtL1AYmU=";
     private static final Duration ACCESS_VALIDITY = Duration.ofMinutes(30);
-    private static final Duration REFRESH_VALIDITY = Duration.ofDays(14);
+    private static final Duration REFRESH_VALIDITY = Duration.ofDays(7);
     private static final String CLAIM_ROLE = "role";
     private static final String CLAIM_TYPE = "type";
     private static final String TYPE_ACCESS = "access";
@@ -35,19 +36,20 @@ class JwtProviderTest {
 
         assertThat(claims.getSubject()).isEqualTo(userId.toString());
         assertThat(claims.getExpiration()).isAfter(claims.getIssuedAt());
-        assertThat(claims.get(CLAIM_ROLE, String.class)).isEqualTo(Role.USER.toString());
+        assertThat(claims.get(CLAIM_ROLE, String.class)).isEqualTo(Role.USER.name());
         assertThat(claims.get(CLAIM_TYPE, String.class)).isEqualTo(TYPE_ACCESS);
     }
 
     @Test
     @DisplayName("리프레시 토큰을 생성하고 다시 풀어서 값이 같은지 검증한다.")
-    void givenUserId_whenCreateRefreshToken_thenContainsUserIdRoleAndType() {
+    void givenUserId_whenCreateRefreshToken_thenContainsUserIdAndTypeAndExpiration() {
         String refreshToken = jwtProvider.createRefreshToken(userId);
         Claims claims = jwtProvider.parseRefreshToken(refreshToken);
 
         assertThat(claims.getSubject()).isEqualTo(userId.toString());
         assertThat(claims.getExpiration()).isAfter(claims.getIssuedAt());
         assertThat(claims.get(CLAIM_TYPE, String.class)).isEqualTo(TYPE_REFRESH);
+        assertThat(claims.get(CLAIM_ROLE)).isNull();
     }
 
     @Test
@@ -89,7 +91,7 @@ class JwtProviderTest {
         String accessToken = expiredProvider.createAccessToken(userId, Role.USER);
 
         assertThatThrownBy(() -> jwtProvider.parseAccessToken(accessToken))
-                .isInstanceOf(JwtException.class);
+                .isInstanceOf(ExpiredJwtException.class);
     }
 
     @Test

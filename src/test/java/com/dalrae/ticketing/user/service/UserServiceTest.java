@@ -4,6 +4,7 @@ import com.dalrae.ticketing.global.exception.BusinessException;
 import com.dalrae.ticketing.global.exception.ErrorCode;
 import com.dalrae.ticketing.user.dto.SignUpRequest;
 import com.dalrae.ticketing.user.repository.UserRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,12 +27,11 @@ class UserServiceTest {
     private UserService userService;
 
     @Test
-    void validateDuplicateEmail() {
-        // given
+    @DisplayName("이메일이 중복되면 예외가 발생하고 저장하지 않는다.")
+    void givenDuplicateEmail_whenSaveUser_thenThrowsBusinessExceptionAndDoesNotSave() {
         SignUpRequest request = new SignUpRequest("test@dalrae.com", "a1234", "park", "01011112222");
         given(userRepository.existsByEmail("test@dalrae.com")).willReturn(true);
 
-        // when, then
         assertThatThrownBy(() -> userService.saveUser(request))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")

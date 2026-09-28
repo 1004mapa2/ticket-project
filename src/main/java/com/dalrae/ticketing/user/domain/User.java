@@ -3,6 +3,7 @@ package com.dalrae.ticketing.user.domain;
 import com.dalrae.ticketing.global.Role;
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
+@Getter
 public class User {
 
     @Id

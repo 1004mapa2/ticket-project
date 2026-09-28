@@ -37,7 +37,7 @@ public class JwtProvider {
                 .subject(userId.toString())
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + accessTokenValidity.toMillis()))
-                .claim(CLAIM_ROLE, role)
+                .claim(CLAIM_ROLE, role.name())
                 .claim(CLAIM_TYPE, TYPE_ACCESS)
                 .signWith(key)
                 .compact();

@@ -1,13 +1,14 @@
 package com.dalrae.ticketing.user.controller;
 
 import com.dalrae.ticketing.user.dto.SignUpRequest;
+import com.dalrae.ticketing.user.dto.UserResponse;
 import com.dalrae.ticketing.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,5 +22,10 @@ public class UserController {
         userService.saveUser(request);
 
         return "ok";
+    }
+
+    @GetMapping("/me")
+    public UserResponse me(@AuthenticationPrincipal UUID userId) {
+        return userService.getMe(userId);
     }
 }

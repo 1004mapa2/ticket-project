@@ -64,6 +64,18 @@ class UserServiceTest {
         assertThat(response.role()).isEqualTo(Role.USER);
     }
 
+    @Test
+    @DisplayName("존재하지 않는 회원 ID로 조회하면 USER_NOT_FOUND 예외가 발생한다.")
+    void givenUnknownUserId_whenGetMe_thenThrowsUserNotFound() {
+        UUID userId = UUID.randomUUID();
+        given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.getMe(userId))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.USER_NOT_FOUND);
+    }
+
     private static User createUser(UUID userId) {
         User user = User.builder()
                 .email("test@dalrae.com")

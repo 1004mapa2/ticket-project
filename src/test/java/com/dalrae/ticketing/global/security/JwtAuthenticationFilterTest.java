@@ -2,6 +2,7 @@ package com.dalrae.ticketing.global.security;
 
 import com.dalrae.ticketing.global.Role;
 import jakarta.servlet.ServletException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,11 @@ class JwtAuthenticationFilterTest {
         filterChain = new MockFilterChain();
     }
 
+    @AfterEach
+    void after() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
     @DisplayName("유효한 액세스 토큰이면 SecurityContext에 userId와 권한이 저장된다.")
     void givenValidAccessToken_whenFilter_thenAuthenticationIsSet() throws Exception {
@@ -50,6 +56,7 @@ class JwtAuthenticationFilterTest {
         assertThat(authentication.isAuthenticated()).isTrue();
         assertThat(authentication.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsExactly("ROLE_USER");
         assertThat(filterChain.getRequest()).isNotNull();
+        assertThat(authentication.getPrincipal()).isEqualTo(userId);
 
     }
 

@@ -49,7 +49,7 @@ class AuthServiceTest {
     private AuthService authService;
 
     @Test
-    @DisplayName("이메일과 비밀번호가 일치하면 AccessToken을 발급한다.")
+    @DisplayName("이메일과 비밀번호가 일치하면 엑세스 토큰을 발급한다.")
     void givenValidCredentials_whenLogin_thenReturnsAccessToken() {
         UUID userId = UUID.randomUUID();
         given(userRepository.findByEmail(EMAIL)).willReturn(Optional.of(createUser(userId)));

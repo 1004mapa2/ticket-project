@@ -20,7 +20,6 @@ public class UserController {
     @PostMapping
     public String signUp(@Valid @RequestBody SignUpRequest request) {
         userService.saveUser(request);
-
         return "ok";
     }
 

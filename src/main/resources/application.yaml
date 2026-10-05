@@ -9,6 +9,9 @@ spring:
         format_sql: true
         default_batch_fetch_size: 100
     open-in-view: false
+  data:
+    redis:
+      timeout: 3s
 server:
   port: 8085
 jwt:

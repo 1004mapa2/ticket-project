@@ -6,6 +6,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -23,6 +24,7 @@ public class JwtProvider {
 
     private final SecretKey key;
     private final Duration accessTokenValidity;
+    @Getter
     private final Duration refreshTokenValidity;
 
     public JwtProvider(JwtProperties jwtProperties) {
@@ -69,7 +71,7 @@ public class JwtProvider {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        if(!type.equals(claims.get(CLAIM_TYPE, String.class))) {
+        if (!type.equals(claims.get(CLAIM_TYPE, String.class))) {
             throw new JwtException("토큰 타입이 올바르지 않습니다.");
 
         }

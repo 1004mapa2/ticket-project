@@ -58,7 +58,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Nested
-    @DisplayName("인증 정보 없이 다음 필터로 넘어간다")
+    @DisplayName("인증 정보 없이 다음 필터로 넘어간다.")
     class PassesWithoutAuthentication {
         @Test
         @DisplayName("Authorization 헤더가 없으면")

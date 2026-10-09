@@ -32,7 +32,7 @@ class JwtProviderTest {
     @DisplayName("액세스 토큰 생성")
     class CreateAccessToken {
         @Test
-        @DisplayName("userId, role, type과 만료 시각이 담긴다")
+        @DisplayName("userId, role, type과 만료 시각이 담긴다.")
         void containsClaims() {
             String accessToken = jwtProvider.createAccessToken(userId, Role.USER);
             Claims claims = jwtProvider.parseAccessToken(accessToken);
@@ -49,7 +49,7 @@ class JwtProviderTest {
     @DisplayName("리프레시 토큰 생성")
     class CreateRefreshToken {
         @Test
-        @DisplayName("userId, type과 만료 시각이 담기고 role은 담기지 않는다")
+        @DisplayName("userId, type과 만료 시각이 담기고 role은 담기지 않는다.")
         void containsClaimsWithoutRole() {
             String refreshToken = jwtProvider.createRefreshToken(userId);
             Claims claims = jwtProvider.parseRefreshToken(refreshToken);
@@ -61,7 +61,7 @@ class JwtProviderTest {
         }
 
         @Test
-        @DisplayName("발급할 때마다 고유한 id(jti)가 담긴다")
+        @DisplayName("발급할 때마다 고유한 id(jti)가 담긴다.")
         void issuesUniqueId() {
             Claims claims1 = jwtProvider.parseRefreshToken(jwtProvider.createRefreshToken(userId));
             Claims claims2 = jwtProvider.parseRefreshToken(jwtProvider.createRefreshToken(userId));
@@ -72,7 +72,7 @@ class JwtProviderTest {
     }
 
     @Nested
-    @DisplayName("토큰 파싱 시 예외가 발생한다")
+    @DisplayName("토큰 파싱 시 예외가 발생한다.")
     class ParseFails {
         @Test
         @DisplayName("액세스 토큰을 리프레시 토큰으로 파싱하면")

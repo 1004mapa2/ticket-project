@@ -26,6 +26,5 @@ public class AuthController {
     @PostMapping("/reissue")
     public TokenResponse reissue(@Valid @RequestBody ReissueRequest request) {
         return authService.reissue(request);
-
     }
 }

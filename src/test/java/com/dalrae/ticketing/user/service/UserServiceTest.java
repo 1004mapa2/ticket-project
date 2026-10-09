@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -46,19 +47,49 @@ class UserServiceTest {
             given(userRepository.existsByEmail(EMAIL)).willReturn(false);
         }
 
+        @Test
+        @DisplayName("이메일이 중복되면 DUPLICATE_EMAIL 예외가 발생하고 저장하지 않는다.")
+        void duplicateEmail() {
+            given(userRepository.existsByEmail(EMAIL)).willReturn(true);
 
-    }
-    @Test
-    @DisplayName("이메일이 중복되면 DUPLICATE_EMAIL 예외가 발생하고 저장하지 않는다")
-    void duplicateEmail() {
-        SignUpRequest request = new SignUpRequest(EMAIL, RAW_PASSWORD, NAME, PHONE);
-        given(userRepository.existsByEmail(EMAIL)).willReturn(true);
+            BusinessException e = assertThrows(BusinessException.class,
+                    () -> userService.saveUser(signUpRequest()));
 
-        BusinessException e = assertThrows(BusinessException.class,
-                () -> userService.saveUser(request));
+            assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DUPLICATE_EMAIL);
+            then(userRepository).should(never()).save(any());
+        }
 
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DUPLICATE_EMAIL);
-        then(userRepository).should(never()).save(any());
+        @Test
+        @DisplayName("비밀번호를 평문이 아닌 해시로 저장한다.")
+        void storesHashedPassword() {
+            userService.saveUser(signUpRequest());
+
+            User saved = savedUser();
+            assertThat(saved.getPassword()).isNotEqualTo(RAW_PASSWORD);
+            assertThat(passwordEncoder.matches(RAW_PASSWORD, saved.getPassword())).isTrue();
+        }
+
+        @Test
+        @DisplayName("요청한 회원 정보와 USER 권한으로 저장한다.")
+        void storesUserInfoWithUserRole() {
+            userService.saveUser(signUpRequest());
+
+            User saved = savedUser();
+            assertThat(saved.getEmail()).isEqualTo(EMAIL);
+            assertThat(saved.getName()).isEqualTo(NAME);
+            assertThat(saved.getPhone()).isEqualTo(PHONE);
+            assertThat(saved.getRole()).isEqualTo(Role.USER);
+        }
+
+        private static SignUpRequest signUpRequest() {
+            return new SignUpRequest(EMAIL, RAW_PASSWORD, NAME, PHONE);
+        }
+
+        private User savedUser() {
+            ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+            then(userRepository).should().save(captor.capture());
+            return captor.getValue();
+        }
     }
 
     @Nested
@@ -81,7 +112,7 @@ class UserServiceTest {
         }
 
         @Test
-        @DisplayName("존재하지 않는 회원이면 USER_NOT_FOUND 예외가 발생한다")
+        @DisplayName("존재하지 않는 회원이면 USER_NOT_FOUND 예외가 발생한다.")
         void unknownUser() {
             given(userRepository.findById(userId)).willReturn(Optional.empty());
 

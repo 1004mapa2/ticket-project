@@ -12,7 +12,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RedisRepository {
 
-    private static final String PREFIX = "refresh: ";
+    private static final String PREFIX = "refresh:";
     private final StringRedisTemplate stringRedisTemplate;
 
     public void save(UUID userId, String refreshToken, Duration ttl) {

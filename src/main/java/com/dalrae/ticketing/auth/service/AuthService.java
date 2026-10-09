@@ -47,7 +47,10 @@ public class AuthService {
             redisRepository.delete(userId);
             throw new BusinessException(INVALID_REFRESH_TOKEN);
         }
-        User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(INVALID_REFRESH_TOKEN));
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            redisRepository.delete(userId);
+            return new BusinessException(INVALID_REFRESH_TOKEN);
+        });
         return issueTokens(user);
     }
 

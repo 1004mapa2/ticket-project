@@ -2,10 +2,7 @@ package com.dalrae.ticketing.global.security;
 
 import com.dalrae.ticketing.global.Role;
 import jakarta.servlet.ServletException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -46,7 +43,7 @@ class JwtAuthenticationFilterTest {
 
     @Test
     @DisplayName("유효한 액세스 토큰이면 SecurityContext에 userId와 권한이 저장된다.")
-    void givenValidAccessToken_whenFilter_thenAuthenticationIsSet() throws Exception {
+    void whenValidAccessToken_thenSetsAuthentication() throws Exception {
         String accessToken = jwtProvider.createAccessToken(userId, Role.USER);
 
         doFilterWithAuthorization("Bearer " + accessToken);
@@ -60,56 +57,57 @@ class JwtAuthenticationFilterTest {
 
     }
 
-    @Test
-    @DisplayName("Authorization 헤더가 없으면 인증 정보 없이 다음 필터로 넘어간다.")
-    void givenNoAuthorizationHeader_whenFilter_thenPassWithoutAuthentication() throws Exception {
+    @Nested
+    @DisplayName("인증 정보 없이 다음 필터로 넘어간다")
+    class PassesWithoutAuthentication {
+        @Test
+        @DisplayName("Authorization 헤더가 없으면")
+        void noHeader() throws Exception {
+            doFilterWithAuthorization(null);
 
-        doFilterWithAuthorization(null);
+            assertNotAuthenticatedAndPassed();
+        }
 
-        assertNotAuthenticatedAndPassed();
+        @Test
+        @DisplayName("Bearer 접두사가 없으면")
+        void noBearerPrefix() throws Exception {
+            String accessToken = jwtProvider.createAccessToken(userId, Role.USER);
 
-    }
+            doFilterWithAuthorization(accessToken);
 
-    @Test
-    @DisplayName("Bearer 접두사가 없으면 인증 정보 없이 다음 필터로 넘어간다.")
-    void givenTokenWithoutBearerPrefix_whenFilter_thenPassWithoutAuthentication() throws Exception {
-        String accessToken = jwtProvider.createAccessToken(userId, Role.USER);
+            assertNotAuthenticatedAndPassed();
+        }
 
-        doFilterWithAuthorization(accessToken);
+        @Test
+        @DisplayName("변조된 토큰이면")
+        void tamperedToken() throws Exception {
+            String accessToken = jwtProvider.createAccessToken(userId, Role.USER);
+            String authorization = "Bearer " + accessToken.substring(0, accessToken.length() - 2) + "xx";
 
-        assertNotAuthenticatedAndPassed();
-    }
+            doFilterWithAuthorization(authorization);
 
-    @Test
-    @DisplayName("변조된 토큰이면 인증 정보 없이 다음 필터로 넘어간다.")
-    void givenTamperedToken_whenFilter_thenPassWithoutAuthentication() throws Exception {
-        String accessToken = jwtProvider.createAccessToken(userId, Role.USER);
-        String authorization = "Bearer " + accessToken.substring(0, accessToken.length() - 2) + "xx";
+            assertNotAuthenticatedAndPassed();
+        }
 
-        doFilterWithAuthorization(authorization);
+        @Test
+        @DisplayName("만료된 토큰이면")
+        void expiredToken() throws Exception {
+            String expiredAccessToken = new JwtProvider(new JwtProperties(SECRET_KEY, Duration.ofMinutes(-1), REFRESH_VALIDITY)).createAccessToken(userId, Role.USER);
 
-        assertNotAuthenticatedAndPassed();
-    }
+            doFilterWithAuthorization("Bearer " + expiredAccessToken);
 
-    @Test
-    @DisplayName("만료된 토큰이면 인증 정보 없이 다음 필터로 넘어간다.")
-    void givenExpiredToken_whenFilter_thenPassWithoutAuthentication() throws Exception {
-        String expiredAccessToken = new JwtProvider(new JwtProperties(SECRET_KEY, Duration.ofMinutes(-1), REFRESH_VALIDITY)).createAccessToken(userId, Role.USER);
+            assertNotAuthenticatedAndPassed();
+        }
 
-        doFilterWithAuthorization("Bearer " + expiredAccessToken);
+        @Test
+        @DisplayName("리프레시 토큰이면")
+        void refreshToken() throws Exception {
+            String refreshToken = jwtProvider.createRefreshToken(userId);
 
-        assertNotAuthenticatedAndPassed();
+            doFilterWithAuthorization("Bearer " + refreshToken);
 
-    }
-
-    @Test
-    @DisplayName("리프레시 토큰이면 인증 정보 없이 다음 필터로 넘어간다.")
-    void givenRefreshToken_whenFilter_thenPassWithoutAuthentication() throws Exception {
-        String refreshToken = jwtProvider.createRefreshToken(userId);
-
-        doFilterWithAuthorization("Bearer " + refreshToken);
-
-        assertNotAuthenticatedAndPassed();
+            assertNotAuthenticatedAndPassed();
+        }
     }
 
     private void doFilterWithAuthorization(String authorization) throws ServletException, IOException {

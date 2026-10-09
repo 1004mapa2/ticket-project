@@ -44,6 +44,7 @@ public class AuthService {
         UUID userId = extractUserId(request.refreshToken());
         String redisSavedToken = redisRepository.find(userId).orElseThrow(() -> new BusinessException(INVALID_REFRESH_TOKEN));
         if (!redisSavedToken.equals(request.refreshToken())) {
+            log.warn("리프레시 토큰 재사용 감지: userId={}", userId);
             redisRepository.delete(userId);
             throw new BusinessException(INVALID_REFRESH_TOKEN);
         }

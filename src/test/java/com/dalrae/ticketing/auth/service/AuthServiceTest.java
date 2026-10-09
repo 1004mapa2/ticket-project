@@ -102,4 +102,71 @@ class AuthServiceTest {
         assertThat(reissued.refreshToken()).isNotEqualTo(login.refreshToken());
         assertThat(redisRepository.find(userId)).contains(reissued.refreshToken());
     }
+
+    @Test
+    @DisplayName("교체된 리프레시 토큰을 재사용하면 새 리프레시 토큰까지 모두 무효화된다.")
+    void whenReissueWithReusedRefreshToken_thenRevokesAllRefreshTokens() {
+        TokenResponse login = authService.login(new LoginRequest(EMAIL, RAW_PASSWORD));
+        TokenResponse reissued = authService.reissue(new ReissueRequest(login.refreshToken()));
+
+        BusinessException reused = assertThrows(BusinessException.class,
+                () -> authService.reissue(new ReissueRequest(login.refreshToken())));
+        assertThat(reused.getErrorCode()).isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN);
+        assertThat(redisRepository.find(userId)).isEmpty();
+
+        BusinessException revoked = assertThrows(BusinessException.class,
+                () -> authService.reissue(new ReissueRequest(reissued.refreshToken())));
+        assertThat(revoked.getErrorCode()).isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN);
+    }
+
+    @Test
+    @DisplayName("저장된 리프레시 토큰이 없으면 재발급에 실패한다.")
+    void whenReissueWithoutStoredRefreshToken_thenThrowsInvalidRefreshToken() {
+        TokenResponse login = authService.login(new LoginRequest(EMAIL, RAW_PASSWORD));
+        redisRepository.delete(userId);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> authService.reissue(new ReissueRequest(login.refreshToken())));
+
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN);
+    }
+
+    @Test
+    @DisplayName("액세스 토큰으로 재발급하면 실패하고 저장된 리프레시 토큰은 유지된다.")
+    void whenReissueWithAccessToken_thenThrowsAndKeepsStoredRefreshToken() {
+        TokenResponse login = authService.login(new LoginRequest(EMAIL, RAW_PASSWORD));
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> authService.reissue(new ReissueRequest(login.accessToken())));
+
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN);
+        assertThat(redisRepository.find(userId)).contains(login.refreshToken());
+    }
+
+    @Test
+    @DisplayName("만료된 리프레시 토큰은 저장되어 있어도 재발급에 실패한다.")
+    void whenReissueWithExpiredRefreshToken_thenThrowsInvalidRefreshToken() {
+        JwtProvider expiredProvider =
+                new JwtProvider(new JwtProperties(SECRET_KEY, ACCESS_VALIDITY, Duration.ofSeconds(-1)));
+        String expiredToken = expiredProvider.createRefreshToken(userId);
+        redisRepository.save(userId, expiredToken, REFRESH_VALIDITY);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> authService.reissue(new ReissueRequest(expiredToken)));
+
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN);
+    }
+
+    @Test
+    @DisplayName("회원이 삭제되었으면 재발급에 실패하고 저장된 리프레시 토큰을 삭제한다.")
+    void whenReissueForDeletedUser_thenThrowsAndDeletesStoredRefreshToken() {
+        TokenResponse login = authService.login(new LoginRequest(EMAIL, RAW_PASSWORD));
+        given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> authService.reissue(new ReissueRequest(login.refreshToken())));
+
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN);
+        assertThat(redisRepository.find(userId)).isEmpty();
+    }
 }

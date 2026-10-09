@@ -5,6 +5,7 @@ import com.dalrae.ticketing.auth.dto.ReissueRequest;
 import com.dalrae.ticketing.auth.dto.TokenResponse;
 import com.dalrae.ticketing.auth.repository.InMemoryRedisRepository;
 import com.dalrae.ticketing.auth.repository.RedisRepository;
+import com.dalrae.ticketing.global.Role;
 import com.dalrae.ticketing.global.exception.BusinessException;
 import com.dalrae.ticketing.global.exception.ErrorCode;
 import com.dalrae.ticketing.global.security.JwtProperties;
@@ -168,5 +169,18 @@ class AuthServiceTest {
 
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN);
         assertThat(redisRepository.find(userId)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("재발급하면 DB의 현재 권한으로 액세스 토큰을 발급한다.")
+    void givenRoleChanged_whenReissue_thenAccessTokenHasNewRole() {
+        TokenResponse login = authService.login(new LoginRequest(EMAIL, RAW_PASSWORD));
+        User user = userRepository.findById(userId).orElseThrow();
+        ReflectionTestUtils.setField(user, "role", Role.ADMIN);
+
+        TokenResponse reissued = authService.reissue(new ReissueRequest(login.refreshToken()));
+
+        assertThat(jwtProvider.parseAccessToken(reissued.accessToken()).get("role", String.class))
+                .isEqualTo("ADMIN");
     }
 }

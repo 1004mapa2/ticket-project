@@ -55,6 +55,10 @@ public class AuthService {
         return issueTokens(user);
     }
 
+    public void logout(UUID userId) {
+        redisRepository.delete(userId);
+    }
+
     private UUID extractUserId(String refreshToken) {
         try {
             Claims claims = jwtProvider.parseRefreshToken(refreshToken);

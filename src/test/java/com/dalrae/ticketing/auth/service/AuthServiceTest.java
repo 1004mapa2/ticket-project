@@ -15,6 +15,7 @@ import com.dalrae.ticketing.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -182,5 +184,40 @@ class AuthServiceTest {
 
         assertThat(jwtProvider.parseAccessToken(reissued.accessToken()).get("role", String.class))
                 .isEqualTo("ADMIN");
+    }
+
+    @Nested
+    @DisplayName("로그아웃")
+    class logout {
+        @Test
+        @DisplayName("저장된 리프레시 토큰을 삭제한다.")
+        void deleteStoredRefreshToken() {
+            authService.login(new LoginRequest(EMAIL, RAW_PASSWORD));
+
+            authService.logout(userId);
+
+            assertThat(redisRepository.find(userId)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("로그아웃한 뒤에는 리프레시 토큰으로 재발급할 수 없다.")
+        void cannotReissue() {
+            TokenResponse login = authService.login(new LoginRequest(EMAIL, RAW_PASSWORD));
+            authService.logout(userId);
+
+            BusinessException e = assertThrows(BusinessException.class,
+                    () -> authService.reissue(new ReissueRequest(login.refreshToken())));
+
+            assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        @Test
+        @DisplayName("저장된 리프레시 토큰이 없어도 로그아웃은 예외 없이 처리된다.")
+        void givenNoStoredRefreshToken_whenLogout_thenDoesNotThrow() {
+            assertDoesNotThrow(() -> authService.logout(userId));
+            assertDoesNotThrow(() -> authService.logout(userId));
+
+            assertThat(redisRepository.find(userId)).isEmpty();
+        }
     }
 }

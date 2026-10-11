@@ -15,8 +15,9 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "A001", "인증이 필요합니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "A002", "권한이 없습니다."),
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "A003", "이메일 또는 비밀번호가 올바르지 않습니다."),
-    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "A004", "유효하지 않은 리프레시 토큰입니다.");
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "A004", "유효하지 않은 리프레시 토큰입니다."),
 
+    INVALID_SCHEDULE_TIME(HttpStatus.BAD_REQUEST, "T001", "예매 오픈 시각은 공연 일시보다 이전이어야 합니다.");
 
     private final HttpStatus status;
     private final String code;

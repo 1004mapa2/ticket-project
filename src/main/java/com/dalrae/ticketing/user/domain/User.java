@@ -1,6 +1,7 @@
 package com.dalrae.ticketing.user.domain;
 
 import com.dalrae.ticketing.global.Role;
+import com.dalrae.ticketing.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,19 +13,22 @@ import java.util.UUID;
 @Entity
 @Table(name = "users")
 @Getter
-public class User {
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID userId;
+
     private String email;
+
     private String password;
+
     private String name;
+
     private String phone;
+
     @Enumerated(EnumType.STRING)
     private Role role;
-    @CreationTimestamp
-    private OffsetDateTime createdAt;
 
     protected User() {
     }

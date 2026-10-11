@@ -20,6 +20,9 @@ public enum ErrorCode {
 
     INVALID_SCHEDULE_TIME(HttpStatus.BAD_REQUEST, "T001", "예매 오픈 시각은 공연 일시보다 이전이어야 합니다."),
     CONCERT_NOT_FOUND(HttpStatus.NOT_FOUND, "T002", "존재하지 않는 공연입니다."),
+    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "T003", "존재하지 않는 회차입니다."),
+    DUPLICATE_SCHEDULE(HttpStatus.CONFLICT, "T004", "같은 일시의 회차가 이미 존재합니다."),
+    PAST_PERFORMANCE_TIME(HttpStatus.BAD_REQUEST, "T008", "공연 일시는 현재 이후여야 합니다."),
 
     VENUE_NOT_FOUND(HttpStatus.NOT_FOUND, "V001", "존재하지 않는 공연장입니다.");
 

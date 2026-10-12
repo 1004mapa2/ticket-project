@@ -6,6 +6,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 @Slf4j
@@ -22,7 +23,6 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage() + ".")
                 .orElse(ErrorCode.INVALID_INPUT.getMessage());
-
         return ResponseEntity.status(ErrorCode.INVALID_INPUT.getStatus())
                 .body(ErrorResponse.of(ErrorCode.INVALID_INPUT, message));
     }
@@ -32,5 +32,14 @@ public class GlobalExceptionHandler {
         log.debug("요청 본문 변환 실패: {}", e.getMessage());
         return ResponseEntity.status(ErrorCode.INVALID_REQUEST_BODY.getStatus())
                 .body(ErrorResponse.of(ErrorCode.INVALID_REQUEST_BODY));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        log.debug("요청 파라미터 변환 실패: name={}, value={}", e.getName(), e.getValue());
+        ErrorCode errorCode = ErrorCode.INVALID_REQUEST_PARAMETER;
+        String message = e.getName() + ": " + errorCode.getMessage();
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ErrorResponse.of(errorCode, message));
     }
 }

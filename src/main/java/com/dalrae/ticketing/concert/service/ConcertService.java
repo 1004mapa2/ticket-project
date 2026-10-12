@@ -38,6 +38,7 @@ public class ConcertService {
         return new ConcertCreateResponse(concert.getConcertId());
     }
 
+    @Transactional
     public ScheduleCreateResponse createSchedule(UUID concertId, ScheduleCreateRequest request) {
         if (!request.performanceAt().isAfter(OffsetDateTime.now(clock))) {
             throw new BusinessException(ErrorCode.PAST_PERFORMANCE_TIME);
@@ -46,8 +47,7 @@ public class ConcertService {
         if (concertScheduleRepository.existsByConcertAndPerformanceAt(concert, request.performanceAt())) {
             throw new BusinessException(ErrorCode.DUPLICATE_SCHEDULE);
         }
-        ConcertSchedule concertSchedule = concertScheduleRepository.save(request.toEntity(concert));
-        return new ScheduleCreateResponse(concertSchedule.getScheduleId());
-
+        ConcertSchedule schedule = concertScheduleRepository.save(request.toEntity(concert));
+        return new ScheduleCreateResponse(schedule.getScheduleId());
     }
 }

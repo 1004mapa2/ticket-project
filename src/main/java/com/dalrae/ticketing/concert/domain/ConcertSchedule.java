@@ -39,4 +39,8 @@ public class ConcertSchedule extends BaseTimeEntity {
         this.performanceAt = performanceAt;
         this.bookingOpenAt = bookingOpenAt;
     }
+
+    public boolean isBeforeBookingOpen(OffsetDateTime now) {
+        return now.isBefore(bookingOpenAt);
+    }
 }

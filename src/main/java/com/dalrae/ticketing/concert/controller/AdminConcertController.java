@@ -1,10 +1,8 @@
 package com.dalrae.ticketing.concert.controller;
 
-import com.dalrae.ticketing.concert.dto.ConcertCreateRequest;
-import com.dalrae.ticketing.concert.dto.ConcertCreateResponse;
-import com.dalrae.ticketing.concert.dto.ScheduleCreateRequest;
-import com.dalrae.ticketing.concert.dto.ScheduleCreateResponse;
+import com.dalrae.ticketing.concert.dto.*;
 import com.dalrae.ticketing.concert.service.ConcertService;
+import com.dalrae.ticketing.concert.service.SeatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +16,7 @@ import java.util.UUID;
 public class AdminConcertController {
 
     private final ConcertService concertService;
+    private final SeatService seatService;
 
     @PostMapping("/concerts")
     @ResponseStatus(HttpStatus.CREATED)
@@ -30,5 +29,12 @@ public class AdminConcertController {
     public ScheduleCreateResponse createSchedule(@PathVariable UUID concertId,
                                                  @Valid @RequestBody ScheduleCreateRequest request) {
         return concertService.createSchedule(concertId, request);
+    }
+
+    @PostMapping("/schedules/{scheduleId}/seats")
+    @ResponseStatus(HttpStatus.CREATED)
+    public SeatCreateResponse createSeats(@PathVariable UUID scheduleId,
+                                          @Valid @RequestBody SeatCreateRequest request) {
+        return seatService.createSeats(scheduleId, request);
     }
 }

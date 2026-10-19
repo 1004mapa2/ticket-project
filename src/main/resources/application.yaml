@@ -15,6 +15,9 @@ spring:
   data:
     redis:
       timeout: 3s
+    web:
+      pageable:
+        max-page-size: 50
 server:
   port: 8085
 jwt:

@@ -40,7 +40,17 @@ public class ConcertSchedule extends BaseTimeEntity {
         this.bookingOpenAt = bookingOpenAt;
     }
 
+    public BookingStatus bookingStatus(OffsetDateTime now) {
+        if (now.isBefore(bookingOpenAt)) {
+            return BookingStatus.BEFORE_OPEN;
+        }
+        if (now.isBefore(performanceAt)) {
+            return BookingStatus.OPEN;
+        }
+        return BookingStatus.CLOSED;
+    }
+
     public boolean isBeforeBookingOpen(OffsetDateTime now) {
-        return now.isBefore(bookingOpenAt);
+        return bookingStatus(now) == BookingStatus.BEFORE_OPEN;
     }
 }
